@@ -120,9 +120,9 @@ public:
         return str;
     }
     int getDataInt(){ // Returns this->dataVect as an int, -1 if stoi() fails
-        // Remove last two characters from string (newline and null terminator)
+        // Remove last character (assumed to be newline)
         std::string str = this->getDataString();
-        if(str.length() < 3){
+        if(str.length() < 2){
             return -1;
         }
         str = str.substr(0, str.length() - 1);
