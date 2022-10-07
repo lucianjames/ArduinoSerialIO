@@ -4,7 +4,7 @@
 
 
 int main(){
-    ArduinoSerialIO arduino("/dev/ttyACM0");
+    ArduinoSerialIO arduino("/dev/ttyACM0", B115200, true);
 
     while(1){
         // Time readUntilNewline() in microseconds
