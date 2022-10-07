@@ -22,7 +22,10 @@ private:
     unsigned char buffer[BUFFERSIZE]; // Input buffer array, this array has to exist because its not possible to read into a vector
     std::vector<unsigned char> dataVect; // Vector to store the data from multiple reads into the buffer
     std::string ttyName; // Path to the serial port
-    void open_port(){ // Open and configures the serial port using this->fd as the file descriptor
+public:
+    // ===== Constructor/Destructor =====
+    ArduinoSerialIO(std::string tty){
+        this->ttyName = tty;
         this->fd = open(this->ttyName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
         if(this->fd == -1){
             throw std::runtime_error("Failed to open port" + this->ttyName);
@@ -31,8 +34,8 @@ private:
         fcntl(this->fd, F_SETFL, 0); // Blocking mode - waits for data in input buffer
         struct termios options; // Port options
         tcgetattr(this->fd, &options); // Get the current options for the port
-        cfsetispeed(&options, B9600); // Set baud rates
-        cfsetospeed(&options, B9600);
+        cfsetispeed(&options, B57600); // Set baud rates
+        cfsetospeed(&options, B57600);
         options.c_cflag |= (CLOCAL | CREAD); // Enable the receiver and set local mode
         tcsetattr(this->fd, TCSANOW, &options); // Set the new options for the port
         options.c_cflag &= ~CSIZE; // Mask the character size bits
@@ -42,14 +45,6 @@ private:
         options.c_cflag &= ~CSIZE;
         options.c_cflag |= CS8; // 8 bits
         options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
-    }
-public:
-
-
-    // ===== Constructor/Destructor =====
-    ArduinoSerialIO(std::string tty){
-        this->ttyName = tty;
-        open_port();
         sleep(1); // Give arduino a second to start up
         tcflush(this->fd, TCIFLUSH); // Flush the input buffer
         std::cout << "Serial port " << this->ttyName << " opened\n";
@@ -124,7 +119,7 @@ public:
         return str;
     }
 
-    
+
     // ===== Misc =====
     void tcflushFD(){ // Flushes /dev/ttyACM_ buffer
         tcflush(this->fd, TCIFLUSH);
