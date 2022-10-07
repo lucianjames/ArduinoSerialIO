@@ -119,6 +119,19 @@ public:
         }
         return str;
     }
+    int getDataInt(){ // Returns this->dataVect as an int, -1 if stoi() fails
+        // Remove last two characters from string (newline and null terminator)
+        std::string str = this->getDataString();
+        if(str.length() < 3){
+            return -1;
+        }
+        str = str.substr(0, str.length() - 1);
+        try{
+            return std::stoi(str);
+        }catch(...){
+            return -1;
+        }
+    }
 
 
     // ===== Misc =====
