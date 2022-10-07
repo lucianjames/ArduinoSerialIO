@@ -6,5 +6,9 @@ void setup(){
 }
 
 void loop(){
-  Serial.print("Hello world\n");
+
+  for(int i=0; i<100000; i++){
+    Serial.print(i);
+    Serial.print('\n');
+  }
 }
