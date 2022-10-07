@@ -44,6 +44,8 @@ private:
         options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
     }
 public:
+
+
     // ===== Constructor/Destructor =====
     ArduinoSerialIO(std::string tty){
         this->ttyName = tty;
@@ -55,6 +57,8 @@ public:
     ~ArduinoSerialIO(){
         close(this->fd);
     }
+
+
     // ===== Input operations =====
     void readUntilNewline(){ // Reads from this->fd into this->dataVect
         int bytes_read_total = 0;
@@ -74,11 +78,23 @@ public:
             }
         }
     }
+    void readChar(){ // Reads a single character from this->fd into this->dataVect
+        int bytes_read = read(this->fd, this->buffer, 1);
+        if(bytes_read == -1){
+            throw std::runtime_error("Failed to read from port" + this->ttyName);
+            return;
+        }
+        std::cout << "Read " << bytes_read << " bytes from" + this->ttyName << " (Should be 1, readChar() called)\n";
+        this->dataVect.push_back(this->buffer[0]);
+    }
+
+
     // ===== Output operations =====
     void writeString(std::string str){ // Writes a string to the serial port
         int bytes_written = write(this->fd, str.c_str(), str.length());
         if(bytes_written == -1){
             throw std::runtime_error("Failed to write to port" + this->ttyName);
+            return;
         }
         std::cout << "Wrote " << bytes_written << " bytes to " << this->ttyName << '\n';
     }
@@ -86,9 +102,12 @@ public:
         int bytes_written = write(this->fd, &c, 1);
         if(bytes_written == -1){
             throw std::runtime_error("Failed to write to port" + this->ttyName);
+            return;
         }
         std::cout << "Wrote " << bytes_written << " bytes to " << this->ttyName << " (Should be 1, writeChar() called)\n";
     }
+
+
     // ===== This->dataVect operations =====
     void clearDataVect(){ // Clears this->dataVect
         this->dataVect.clear();
@@ -104,6 +123,8 @@ public:
         }
         return str;
     }
+
+    
     // ===== Misc =====
     void tcflushFD(){ // Flushes /dev/ttyACM_ buffer
         tcflush(this->fd, TCIFLUSH);
