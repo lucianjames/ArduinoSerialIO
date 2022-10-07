@@ -1,15 +1,11 @@
 void setup() {
-  Serial.begin (9600);
-}
-
-void sendSomeData(){
-  for(int i=0; i<100; i++){
-    Serial.print(i);
-  }
-  Serial.println();
+  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
 }
 
 void loop() {
-  delay(100);
-  sendSomeData();
+  // read the incoming string:
+  String incomingString = Serial.readString();
+  // prints the received data
+  Serial.print("I received: ");
+  Serial.println(incomingString);
 }
