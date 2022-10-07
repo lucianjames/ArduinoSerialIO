@@ -30,7 +30,8 @@ public:
         if(this->fd == -1){
             throw std::runtime_error("Failed to open port " + this->ttyName);
         }
-        // The following options should probably be configurable somehow:
+        // The following options should probably be configurable somehow
+        // Honestly I have no fucking clue what most of these options do
         fcntl(this->fd, F_SETFL, 0); // Blocking mode - waits for data in input buffer
         struct termios options; // Port options
         tcgetattr(this->fd, &options); // Get the current options for the port

@@ -10,7 +10,9 @@ void setup(){
 
 void loop(){
   while(Serial.available() > 0){
+    digitalWrite(LED_BUILTIN, HIGH);
     String inStr = Serial.readString();
     Serial.println(inStr);
+    digitalWrite(LED_BUILTIN, LOW);
   }
 }
