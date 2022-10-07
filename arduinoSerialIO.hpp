@@ -28,7 +28,7 @@ public:
         this->ttyName = tty;
         this->fd = open(this->ttyName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
         if(this->fd == -1){
-            throw std::runtime_error("Failed to open port" + this->ttyName);
+            throw std::runtime_error("Failed to open port " + this->ttyName);
         }
         // The following options should probably be configurable somehow:
         fcntl(this->fd, F_SETFL, 0); // Blocking mode - waits for data in input buffer
@@ -61,13 +61,13 @@ public:
             int bytes_read = read(this->fd, this->buffer, BUFFERSIZE);
             bytes_read_total += bytes_read;
             if(bytes_read == -1){
-                throw std::runtime_error("Failed to read from port" + this->ttyName);
+                throw std::runtime_error("Failed to read from port " + this->ttyName);
                 return;
             }
             for(int i = 0; i < bytes_read; i++){
                 this->dataVect.push_back(this->buffer[i]); // Reading buffer[i] into the vector before checking if it is a newline will cause the vector to contain the newline character
                 if(this->buffer[i] == '\n'){
-                    std::cout << "Read " << bytes_read_total << " bytes from" + this->ttyName + "\n";
+                    std::cout << "Read " << bytes_read_total << " bytes from " + this->ttyName + "\n";
                     return;
                 }
             }
@@ -76,10 +76,10 @@ public:
     void readChar(){ // Reads a single character from this->fd into this->dataVect
         int bytes_read = read(this->fd, this->buffer, 1);
         if(bytes_read == -1){
-            throw std::runtime_error("Failed to read from port" + this->ttyName);
+            throw std::runtime_error("Failed to read from port " + this->ttyName);
             return;
         }
-        std::cout << "Read " << bytes_read << " bytes from" + this->ttyName << " (Should be 1, readChar() called)\n";
+        std::cout << "Read " << bytes_read << " bytes from " + this->ttyName << " (Should be 1, readChar() called)\n";
         this->dataVect.push_back(this->buffer[0]);
     }
 
@@ -88,7 +88,7 @@ public:
     void writeString(std::string str){ // Writes a string to the serial port
         int bytes_written = write(this->fd, str.c_str(), str.length());
         if(bytes_written == -1){
-            throw std::runtime_error("Failed to write to port" + this->ttyName);
+            throw std::runtime_error("Failed to write to port " + this->ttyName);
             return;
         }
         std::cout << "Wrote " << bytes_written << " bytes to " << this->ttyName << '\n';
@@ -96,7 +96,7 @@ public:
     void writeChar(char c){ // Writes a single character to the serial port
         int bytes_written = write(this->fd, &c, 1);
         if(bytes_written == -1){
-            throw std::runtime_error("Failed to write to port" + this->ttyName);
+            throw std::runtime_error("Failed to write to port " + this->ttyName);
             return;
         }
         std::cout << "Wrote " << bytes_written << " bytes to " << this->ttyName << " (Should be 1, writeChar() called)\n";
