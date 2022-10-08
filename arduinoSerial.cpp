@@ -96,8 +96,13 @@ int arduinoSerial::peek(){
     return c;
 }
 
-void arduinoSerial::print(char *str){
-    // Function not yet implemented
+/*
+    * Prints data to the serial port (as human-readable ASCII text ?maybe?)
+    * Will need to write a few overloaded functions for different data types
+*/
+void arduinoSerial::print(std::string str){
+    write(this->fd, str.c_str(), str.length());
+    if(this->debug){ std::cout << "print(): Wrote " << str.length() << " bytes to " << this->ttyName << "\n"; }
 }
 
 void arduinoSerial::println(char *str){
@@ -213,10 +218,10 @@ void arduinoSerial::setTimeout(unsigned long timeout){
     std::cout << "setTimeout() not yet implemented, read arduinoSerial.h for more information.\n";
 }
 
-size_t arduinoSerial::write(unsigned char byte){
+size_t arduinoSerial::write_s(unsigned char byte){
     return -1; // Function not yet implemented
 }
 
-size_t arduinoSerial::write(char *buffer, size_t size){
+size_t arduinoSerial::write_s(char *buffer, size_t size){
     return -1; // Function not yet implemented
 }

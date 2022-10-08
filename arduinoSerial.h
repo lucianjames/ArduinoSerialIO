@@ -32,7 +32,7 @@ public:
     float parseFloat();
     int parseInt();
     int peek();
-    void print(char *str);
+    void print(std::string str);
     void println(char *str);
     int read_s(); // read_s() is used instead of read() because read() is already taken by the C library. >:(
     size_t readBytes(char *buffer, size_t length);
@@ -40,6 +40,6 @@ public:
     std::string readString();
     std::string readStringUntil(char terminator);
     void setTimeout(unsigned long timeout);
-    size_t write(unsigned char byte);
-    size_t write(char *buffer, size_t size);
+    size_t write_s(unsigned char byte);
+    size_t write_s(char *buffer, size_t size);
 };
