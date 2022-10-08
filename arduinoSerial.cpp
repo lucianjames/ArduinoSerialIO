@@ -13,21 +13,21 @@
 
 #define BUFFERSIZE 16 // This is used for functions like readString() which need to create their own buffer instead of using one passed in by the user. Using a small value (16) for testing purposes.
 
-arduinoSerial::arduinoSerial(std::string port, bool debug=false) {
+arduinoSerial::arduinoSerial(std::string port, bool debug){
     this->debug = debug;
     this->ttyName = port;
     // Setting up the file descriptor will be done by the begin() function.
 }
 
-arduinoSerial::~arduinoSerial() {
+arduinoSerial::~arduinoSerial(){
     close(this->fd); // Close the file descriptor
 }
 
-unsigned int arduinoSerial::available() {
+unsigned int arduinoSerial::available(){
     return -1; // Function not yet implemented
 }
 
-unsigned int arduinoSerial::availableForWrite() {
+unsigned int arduinoSerial::availableForWrite(){
     return -1; // Function not yet implemented
 }
 
@@ -37,7 +37,7 @@ void arduinoSerial::begin(unsigned long baudRate){
         throw std::runtime_error("Unable to start the serial port " + this->ttyName);
     }
     if(this->debug){ std::cout << "Serial port " << this->ttyName << " opened\n"; }
-    fcntl(this->fd, F_SETFL, 0); // Set the file descriptor to blocking mode
+    fcntl(this->fd, F_SETFL, O_NONBLOCK); // Set the file descriptor to nonblocking mode
     // !!! The following termios options may or may not be correct:
     struct termios options;
     tcgetattr(this->fd, &options); // Get the current options for the port
@@ -91,7 +91,6 @@ void arduinoSerial::print(char *str){
 void arduinoSerial::println(char *str){
     // Function not yet implemented
 }
-
 
 /*
     * This function reads a single byte from the serial port.
