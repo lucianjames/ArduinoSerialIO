@@ -2,3 +2,4 @@ main.cpp
 *.out
 arduinoCode/
 stuff/
+.vscode/settings.json
