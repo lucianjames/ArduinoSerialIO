@@ -33,6 +33,9 @@ public:
     int parseInt();
     int peek();
     void print(std::string str);
+    void print(char c);
+    void print(int num);
+    void print(float num);
     void println(char *str);
     int read_s(); // read_s() is used instead of read() because read() is already taken by the C library. >:(
     size_t readBytes(char *buffer, size_t length);

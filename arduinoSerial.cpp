@@ -104,6 +104,21 @@ void arduinoSerial::print(std::string str){
     write(this->fd, str.c_str(), str.length());
     if(this->debug){ std::cout << "print(): Wrote " << str.length() << " bytes to " << this->ttyName << "\n"; }
 }
+void arduinoSerial::print(char c){
+    write(this->fd, &c, 1);
+    if(this->debug){ std::cout << "print(): Wrote 1 byte to " << this->ttyName << "\n"; }
+}
+void arduinoSerial::print(int i){
+    std::string str = std::to_string(i);
+    write(this->fd, str.c_str(), str.length());
+    if(this->debug){ std::cout << "print(): Wrote " << str.length() << " bytes to " << this->ttyName << "\n"; }
+}
+void arduinoSerial::print(float f){
+    std::string str = std::to_string(f);
+    write(this->fd, str.c_str(), str.length());
+    if(this->debug){ std::cout << "print(): Wrote " << str.length() << " bytes to " << this->ttyName << "\n"; }
+}
+
 
 void arduinoSerial::println(char *str){
     // Function not yet implemented
