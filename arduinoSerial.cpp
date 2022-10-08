@@ -60,8 +60,37 @@ void arduinoSerial::end(){
     if(this->debug){ std::cout << "end(): Serial port " << this->ttyName << " closed\n"; }
 }
 
-bool arduinoSerial::find(char *target){
-    return false; // Function not yet implemented
+/*
+    * Reads data from the serial buffer intil the target string is found.
+    * Returns true if the target string was found, false otherwise.
+*/
+bool arduinoSerial::find(char target){
+    char c;
+    while(1){
+        c = this->read_s();
+        if(c == target){
+            if(this->debug){ std::cout << "find(): Found target '" << target << "in " << this->ttyName << "\n"; }
+            return true;
+        }
+        else if(c == -1){
+            if(this->debug){ std::cout << "find(): Did not find " << target << " in " << this->ttyName << "\n"; }
+            return false;
+        }
+    }
+    return false;
+}
+
+// WARNING: READS ENTIRE BUFFER, PROBABLY NOT A COPY OF HOW Serial.find() WORKS IN ARDUINO ???
+bool arduinoSerial::find(std::string targetStr){
+    std::string read = this->readString();
+    if(read.find(targetStr) != std::string::npos){
+        if(this->debug){ std::cout << "find(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
+        return true;
+    }
+    else{
+        if(this->debug){ std::cout << "find(): Did not find '" << targetStr << "' in " << this->ttyName << "\n"; }
+        return false;
+    }
 }
 
 bool arduinoSerial::findUntil(char *target, char *terminator){

@@ -26,7 +26,8 @@ public:
     unsigned int availableForWrite();
     void begin(unsigned long baudRate);
     void end();
-    bool find(char *target);
+    bool find(char target);
+    bool find(std::string targetStr);
     bool findUntil(char *target, char *terminator);
     void flush();
     float parseFloat();
