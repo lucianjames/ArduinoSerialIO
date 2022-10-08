@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 
+#define BUFFERSIZE 16 // This is used for functions like readString() which need to create their own buffer instead of using one passed in by the user. Using a small value (16) for testing purposes.
+
 arduinoSerial::arduinoSerial(std::string port, bool debug=false) {
     this->debug = debug;
     this->ttyName = port;
@@ -36,6 +38,7 @@ void arduinoSerial::begin(unsigned long baudRate){
     }
     if(this->debug){ std::cout << "Serial port " << this->ttyName << " opened\n"; }
     fcntl(this->fd, F_SETFL, 0); // Set the file descriptor to blocking mode
+    // !!! The following termios options may or may not be correct:
     struct termios options;
     tcgetattr(this->fd, &options); // Get the current options for the port
     cfsetispeed(&options, baudRate); // Set the baud rates
@@ -89,24 +92,106 @@ void arduinoSerial::println(char *str){
     // Function not yet implemented
 }
 
-int arduinoSerial::read(){
-    return -1; // Function not yet implemented
+
+/*
+    * This function reads a single byte from the serial port.
+    * It returns -1 if no data is available.
+    * Function is called read_s() because read() is already taken by the C library.
+*/
+int arduinoSerial::read_s(){
+    unsigned char byte;
+    int bytesRead = read(this->fd, &byte, 1);
+    if(bytesRead == -1){
+        if(debug){ std::cout << "Error reading from serial port " << this->ttyName << " (Returned -1)\n"; }
+        return -1;
+    }
+    if(bytesRead == 0){
+        if(debug){ std::cout << "Did not read from serial port " << this->ttyName << " (Returned 0, EOF)\n"; }
+        return -1;
+    }
+    return byte;
 }
 
+/*
+    * Reads characters from the serial port into a buffer.
+    * The function terminates if the terminator character is read, or if it times out.
+    * Returns the number of bytes placed in the buffer (0 means no valid data found).
+*/
 size_t arduinoSerial::readBytes(char *buffer, size_t length){
-    return -1; // Function not yet implemented
+    size_t bytesRead = 0;
+    while(bytesRead < length){
+        int byte = this->read_s();
+        if(byte == -1){
+            if(this->debug){ std::cout << "readBytes(): Error reading from serial port " << this->ttyName << "\n"; }
+            break;
+        }
+        buffer[bytesRead] = byte;
+        bytesRead++;
+    }
+    if(debug){ std::cout << "Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
+    return bytesRead;
 }
 
+/*
+    * Reads characters from the serial port into a buffer.
+    * The function terminates if the terminator character is read, or if it times out.
+    * Returns the number of bytes placed in the buffer (0 means no valid data found).
+*/
 size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t length){
-    return -1; // Function not yet implemented
+    size_t bytesRead = 0;
+    while(bytesRead < length){ // Read until the desired number of bytes have been read
+        int byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
+        if(byte == -1){ // -1 Means some error occurred (Such as no data available)
+            if(this->debug){ std::cout << "readBytesUntil(): Error reading from serial port " << this->ttyName << "\n"; }
+            break;
+        }
+        buffer[bytesRead] = byte;
+        bytesRead++;
+        if(byte == terminator){
+            if(this->debug){ std::cout << "Terminator character found, stopping read\n"; }
+            break;
+        }
+    }
+    if(debug){ std::cout << "Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
+    return bytesRead;
 }
 
+/*
+    * Reads characters from the serial port into a std::string.
+    * The function terminates if it times out. (Not implemented yet, for now it just reads until /dev/ttyACM0 is empty)
+*/
 std::string arduinoSerial::readString(){
-    return ""; // Function not yet implemented
+    char buffer[BUFFERSIZE]; // Create a buffer to store the data
+    std::string str = ""; // Create a string to return
+    while(1){
+        size_t bytesRead = this->readBytes(buffer, BUFFERSIZE); // Read the data into the buffer local to this function
+        for(size_t i = 0; i < bytesRead; i++){
+            str += buffer[i]; // Add the data to the string
+        }
+        if(bytesRead < BUFFERSIZE){ // If the buffer is not full, then we have reached the end of the data
+            break;
+        }
+    }
+    return str;
 }
 
+/*
+    * Reads characters from the serial port into a std::string.
+    * The function terminates if the terminator character is read, or if it times out.
+*/
 std::string arduinoSerial::readStringUntil(char terminator){
-    return ""; // Function not yet implemented
+    char buffer[BUFFERSIZE]; // Create a buffer to store the data
+    std::string str = ""; // Create a string to return
+    while(1){
+        size_t bytesRead = this->readBytesUntil(terminator, buffer, BUFFERSIZE); // Read the data into the buffer local to this function
+        for(size_t i = 0; i < bytesRead; i++){
+            str += buffer[i]; // Add the data to the string
+        }
+        if(bytesRead < BUFFERSIZE){ // If the buffer is not full, then we have reached the end of the data
+            break;
+        }
+    }
+    return str;
 }
 
 void arduinoSerial::setTimeout(unsigned long timeout){
