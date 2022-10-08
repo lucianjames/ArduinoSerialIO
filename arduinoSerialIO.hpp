@@ -48,7 +48,7 @@ public:
         options.c_cflag &= ~CSIZE;
         options.c_cflag |= CS8; // 8 bits
         options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
-        //sleep(1); // Give arduino a second to start up
+        sleep(1); // Give arduino a second to start up
         tcflush(this->fd, TCIFLUSH); // Flush the input buffer
         std::cout << "Serial port " << this->ttyName << " opened\n";
     }
@@ -58,7 +58,7 @@ public:
 
 
     // ===== Input operations =====
-    void readUntilNewline(){ // Reads from this->fd into this->dataVect
+    void readUntilChar(char c){ // Reads from this->fd into this->dataVect until the character c is read
         int bytes_read_total = 0;
         while(1){
             int bytes_read = read(this->fd, this->buffer, BUFFERSIZE);
@@ -69,12 +69,15 @@ public:
             }
             for(int i = 0; i < bytes_read; i++){
                 this->dataVect.push_back(this->buffer[i]); // Reading buffer[i] into the vector before checking if it is a newline will cause the vector to contain the newline character
-                if(this->buffer[i] == '\n'){
+                if(this->buffer[i] == c){
                     if(debugLog){std::cout << "Read " << bytes_read_total << " bytes from " + this->ttyName + "\n";}
                     return;
                 }
             }
         }
+    }
+    void readUntilNewline(){ // So i dont have to update my code
+        this->readUntilChar('\n'); 
     }
     void readChar(){ // Reads a single character from this->fd into this->dataVect
         int bytes_read = read(this->fd, this->buffer, 1);
@@ -142,7 +145,7 @@ public:
 
 
     // ===== Misc =====
-    void tcflushFD(){ // Flushes /dev/ttyACM_ buffer
+    void tcflushFD(){ // Flushes /dev/ttyACM_ buffer (this->fd)
         tcflush(this->fd, TCIFLUSH);
         if(debugLog){std::cout << "tcflushed " << this->ttyName << "\n";}
     }
