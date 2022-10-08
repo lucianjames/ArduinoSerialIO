@@ -80,7 +80,7 @@ bool arduinoSerial::find(char target){
     return false;
 }
 
-// WARNING: READS ENTIRE BUFFER, PROBABLY NOT A COPY OF HOW Serial.find() WORKS IN ARDUINO ???
+// WARNING: READS ENTIRE BUFFER, PROBABLY NOT A COPY OF HOW Serial.find() WORKS IN ARDUINO
 bool arduinoSerial::find(std::string targetStr){
     std::string read = this->readString();
     if(read.find(targetStr) != std::string::npos){
@@ -97,6 +97,9 @@ bool arduinoSerial::findUntil(char *target, char *terminator){
     return false; // Function not yet implemented
 }
 
+/*
+    * Might not implement this function.
+*/
 void arduinoSerial::flush(){
     // Function not yet implemented
 }
