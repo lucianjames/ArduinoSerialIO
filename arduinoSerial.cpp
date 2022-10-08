@@ -255,10 +255,26 @@ void arduinoSerial::setTimeout(unsigned long timeout){
     std::cout << "setTimeout() not yet implemented, read arduinoSerial.h for more information.\n";
 }
 
-size_t arduinoSerial::write_s(unsigned char byte){
-    return -1; // Function not yet implemented
+/*
+    * Writes binary data to the serial port.
+    * Data is sent as a byte or series of bytes.
+*/
+size_t arduinoSerial::write_s(char byte){
+    int bytesWritten = write(this->fd, &byte, 1);
+    if(bytesWritten == -1){
+        if(this->debug){ std::cout << "write_s(): Error writing to serial port " << this->ttyName << " (Returned -1)\n"; }
+        return -1;
+    }
+    if(this->debug){ std::cout << "write_s(): Wrote " << bytesWritten << " bytes to " << this->ttyName << "\n"; }
+    return bytesWritten;
 }
 
 size_t arduinoSerial::write_s(char *buffer, size_t size){
-    return -1; // Function not yet implemented
+    int bytesWritten = write(this->fd, buffer, size);
+    if(bytesWritten == -1){
+        if(this->debug){ std::cout << "write_s(): Error writing to serial port " << this->ttyName << " (Returned -1)\n"; }
+        return -1;
+    }
+    if(this->debug){ std::cout << "write_s(): Wrote " << bytesWritten << " bytes to " << this->ttyName << "\n"; }
+    return bytesWritten;
 }

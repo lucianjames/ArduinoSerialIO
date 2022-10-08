@@ -46,6 +46,6 @@ public:
     std::string readString();
     std::string readStringUntil(char terminator);
     void setTimeout(unsigned long timeout);
-    size_t write_s(unsigned char byte);
+    size_t write_s(char byte);
     size_t write_s(char *buffer, size_t size);
 };
