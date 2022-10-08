@@ -119,9 +119,31 @@ void arduinoSerial::print(float f){
     if(this->debug){ std::cout << "print(): Wrote " << str.length() << " bytes to " << this->ttyName << "\n"; }
 }
 
-
-void arduinoSerial::println(char *str){
-    // Function not yet implemented
+/*
+    * Prints data to the serial port followed by a newline (as human-readable ASCII text ?maybe?)
+    * Will need to write a few overloaded functions for different data types
+*/
+void arduinoSerial::println(std::string str){
+    write(this->fd, str.c_str(), str.length());
+    write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << str.length()+2 << " bytes to " << this->ttyName << "\n"; }
+}
+void arduinoSerial::println(char c){
+    write(this->fd, &c, 1);
+    write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote 3 bytes to " << this->ttyName << "\n"; }
+}
+void arduinoSerial::println(int i){
+    std::string str = std::to_string(i);
+    write(this->fd, str.c_str(), str.length());
+    write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << str.length()+2 << " bytes to " << this->ttyName << "\n"; }
+}
+void arduinoSerial::println(float f){
+    std::string str = std::to_string(f);
+    write(this->fd, str.c_str(), str.length());
+    write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << str.length()+2 << " bytes to " << this->ttyName << "\n"; }
 }
 
 /*

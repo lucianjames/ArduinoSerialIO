@@ -36,7 +36,10 @@ public:
     void print(char c);
     void print(int num);
     void print(float num);
-    void println(char *str);
+    void println(std::string str);
+    void println(char c);
+    void println(int num);
+    void println(float num);
     int read_s(); // read_s() is used instead of read() because read() is already taken by the C library. >:(
     size_t readBytes(char *buffer, size_t length);
     size_t readBytesUntil(char terminator, char *buffer, size_t length);
