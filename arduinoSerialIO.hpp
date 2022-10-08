@@ -37,7 +37,7 @@ public:
         fcntl(this->fd, F_SETFL, 0); // Blocking mode - waits for data in input buffer
         struct termios options; // Port options
         tcgetattr(this->fd, &options); // Get the current options for the port
-        cfsetispeed(&options, baudRate); // Set baud rates
+        cfsetispeed(&options, baudRate); // Set baud rates, See termios-baud.h for the available baud rate macros
         cfsetospeed(&options, baudRate);
         options.c_cflag |= (CLOCAL | CREAD); // Enable the receiver and set local mode
         tcsetattr(this->fd, TCSANOW, &options); // Set the new options for the port
