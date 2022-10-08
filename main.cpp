@@ -11,8 +11,7 @@ int main(){
     arduinoSerial serial("/dev/ttyACM0", DEBUGMODE);
     serial.begin(9600);
     while(1){
-        std::string str = serial.readString();
-        std::cout << str;
+        std::cout << serial.peek() << "\n";
         std::cout << "Sleeping for 2.3 seconds\n";
         sleep(2.3);
     }

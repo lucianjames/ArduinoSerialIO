@@ -16,11 +16,11 @@
 arduinoSerial::arduinoSerial(std::string port, bool debug){
     this->debug = debug;
     this->ttyName = port;
-    // Setting up the file descriptor will be done by the begin() function.
 }
 
 arduinoSerial::~arduinoSerial(){
     close(this->fd); // Close the file descriptor
+    if(this->debug){ std::cout << "~arduinoSerial(): Closed file descriptor " << this->fd << " for " << this->ttyName << "\n"; }
 }
 
 unsigned int arduinoSerial::available(){
@@ -34,9 +34,9 @@ unsigned int arduinoSerial::availableForWrite(){
 void arduinoSerial::begin(unsigned long baudRate){
     this->fd = open(this->ttyName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY); // Open the file descriptor
     if(this->fd == -1){
-        throw std::runtime_error("Unable to start the serial port " + this->ttyName);
+        throw std::runtime_error("begin(): Unable to start the serial port " + this->ttyName);
     }
-    if(this->debug){ std::cout << "Serial port " << this->ttyName << " opened\n"; }
+    if(this->debug){ std::cout << "begin(): Serial port " << this->ttyName << " opened\n"; }
     fcntl(this->fd, F_SETFL, O_NONBLOCK); // Set the file descriptor to nonblocking mode
     // !!! The following termios options may or may not be correct:
     struct termios options;
@@ -52,12 +52,12 @@ void arduinoSerial::begin(unsigned long baudRate){
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CS8; // 8 bits
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
-    if(this->debug){ std::cout << "Serial port " << this->ttyName << " configured\n"; }
+    if(this->debug){ std::cout << "begin(): Serial port " << this->ttyName << " configured. File descriptor: " << this->fd << "\n"; }
 }
 
 void arduinoSerial::end(){
     close(this->fd); // Close the file descriptor
-    if(this->debug){ std::cout << "Serial port " << this->ttyName << " closed\n"; }
+    if(this->debug){ std::cout << "end(): Serial port " << this->ttyName << " closed\n"; }
 }
 
 bool arduinoSerial::find(char *target){
@@ -80,8 +80,20 @@ int arduinoSerial::parseInt(){
     return -1; // Function not yet implemented
 }
 
+/*
+    * Returns the next byte of incoming serial data without removing it from the internal serial buffer.
+*/
 int arduinoSerial::peek(){
-    return -1; // Function not yet implemented
+    FILE* fp = fdopen(this->fd, "r"); // We need a FILE* to use fgetc()/ungetc()
+    if(fp == NULL){
+        throw std::runtime_error("peek(): Unable to open the file descriptor " + std::to_string(this->fd));
+    }else if(this->debug){
+        std::cout << "peek(): File descriptor " << this->fd << " opened as a FILE*\n";
+    }
+    int c = fgetc(fp); // Get the next character
+    ungetc(c, fp); // Put the character back
+    fclose(fp); // Close the file pointer
+    return c;
 }
 
 void arduinoSerial::print(char *str){
@@ -98,14 +110,14 @@ void arduinoSerial::println(char *str){
     * Function is called read_s() because read() is already taken by the C library.
 */
 int arduinoSerial::read_s(){
-    unsigned char byte;
+    char byte;
     int bytesRead = read(this->fd, &byte, 1);
     if(bytesRead == -1){
-        if(debug){ std::cout << "Error reading from serial port " << this->ttyName << " (Returned -1) - Buffer is likely empty\n"; }
+        if(this->debug){ std::cout << "read_s(): Error reading from serial port " << this->ttyName << " (Returned -1) - Buffer is likely empty\n"; }
         return -1;
     }
     if(bytesRead == 0){
-        if(debug){ std::cout << "Did not read from serial port " << this->ttyName << " (Returned 0, EOF)\n"; }
+        if(this->debug){ std::cout << "read_s(): Did not read from serial port " << this->ttyName << " (Returned 0, EOF)\n"; }
         return -1;
     }
     return byte;
@@ -127,7 +139,7 @@ size_t arduinoSerial::readBytes(char *buffer, size_t length){
         buffer[bytesRead] = byte;
         bytesRead++;
     }
-    if(debug){ std::cout << "Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
+    if(this->debug){ std::cout << "readBytes(): Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
     return bytesRead;
 }
 
@@ -151,7 +163,7 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
             break;
         }
     }
-    if(debug){ std::cout << "Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
+    if(this->debug){ std::cout << "readBytesUntil(): Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
     return bytesRead;
 }
 
@@ -171,7 +183,7 @@ std::string arduinoSerial::readString(){
             break;
         }
     }
-    if(debug){ std::cout << "readString(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
+    if(this->debug){ std::cout << "readString(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
     return str;
 }
 
@@ -191,7 +203,7 @@ std::string arduinoSerial::readStringUntil(char terminator){
             break;
         }
     }
-    if(debug){ std::cout << "readStringUntil(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
+    if(this->debug){ std::cout << "readStringUntil(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
     return str;
 }
 
