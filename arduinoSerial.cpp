@@ -32,6 +32,17 @@ unsigned int arduinoSerial::availableForWrite(){
 }
 
 void arduinoSerial::begin(unsigned long baudRate){
+    // Check if the baud rate is valid. std::find doesnt seem to work with this->acceptableBaudRates, so i have to do it manually
+    bool baudRateValid = false;
+    for(auto b : this->acceptableBaudRates){
+        if(b == baudRate){
+            baudRateValid = true;
+            break;
+        }
+    }
+    if(!baudRateValid){
+        throw std::invalid_argument("Invalid baud rate, see termios.h and termios-baud.h for a list of acceptable baud rate macros");
+    }
     this->fd = open(this->ttyName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY); // Open the file descriptor
     if(this->fd == -1){
         throw std::runtime_error("begin(): Unable to start the serial port " + this->ttyName);
