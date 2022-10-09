@@ -44,7 +44,6 @@ void arduinoSerial::begin(unsigned long baudRate){
     cfsetispeed(&options, baudRate); // Set the baud rates
     cfsetospeed(&options, baudRate);
     options.c_cflag |= (CLOCAL | CREAD); // Enable the receiver and set local mode
-    tcsetattr(this->fd, TCSANOW, &options); // Set the new options for the port
     options.c_cflag &= ~CSIZE; // Mask the character size bits
     options.c_cflag |= CS8; // Select 8 data bits
     options.c_cflag &= ~PARENB; // No parity
@@ -52,6 +51,9 @@ void arduinoSerial::begin(unsigned long baudRate){
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CS8; // 8 bits
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
+    tcsetattr(this->fd, TCSANOW, &options); // Set the new options for the port
+    sleep(1); // Wait for the Arduino to reset
+    tcflush(this->fd, TCIFLUSH);
     if(this->debug){ std::cout << "begin(): Serial port " << this->ttyName << " configured. File descriptor: " << this->fd << "\n"; }
 }
 
@@ -187,11 +189,11 @@ int arduinoSerial::read_s(){
     char byte;
     int bytesRead = read(this->fd, &byte, 1);
     if(bytesRead == -1){
-        if(this->debug){ std::cout << "read_s(): Error reading from serial port " << this->ttyName << " (Returned -1) - Buffer is likely empty\n"; }
+        if(this->debug){ std::cout << "read_s(): Did not read from serial port " << this->ttyName << " (Returned -1) - Buffer is likely empty\n"; }
         return -1;
     }
     if(bytesRead == 0){
-        if(this->debug){ std::cout << "read_s(): Did not read from serial port " << this->ttyName << " (Returned 0, EOF)\n"; }
+        if(this->debug){ std::cout << "read_s(): ERROR reading from serial port " << this->ttyName << " (Returned 0, EOF) - !!! /dev/ttyACM_ likely doesnt exist !!!\n"; }
         return -1;
     }
     return byte;
