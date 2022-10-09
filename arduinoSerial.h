@@ -11,7 +11,7 @@
     * 
     * Features which will not be implemented (in this version):
     * - Timeout, a different branch will be created for this
-    * - Flush()
+    * - Flush() - This is because 
     * - AvailableForWrite()
     * - Peek()
     * 
@@ -19,6 +19,7 @@
     * Notes:
     *  - Timeout is not yet implemented, so functions may block indefinitely. Once ive implemented everything without timeout, I'll add it (probably in a separate branch).
     *  - The configuration of the serial port may not be correct. 
+    *  - Flush is set up to behave as it did prior to arduino 1.0, it removes incoming data.
 */
 
 
@@ -40,7 +41,7 @@ public:
     bool find(char target);
     bool find(std::string targetStr);
     bool findUntil(char *target, char *terminator);
-    //void flush();
+    void flush();
     float parseFloat();
     long parseInt();
     //int peek();

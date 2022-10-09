@@ -121,12 +121,13 @@ bool arduinoSerial::findUntil(char *target, char *terminator){
 }
 
 /*
-    * Waits for the transmission of outgoing serial data to complete.
-    * Might not implement this function.
-void arduinoSerial::flush(){
-    std::cout << "flush(): Function not implemented\n";
-}
+    * Removes incoming serial data from the serial buffer.
+    * Doesnt do what Serial.flush() does in Arduino, but it is still useful.
 */
+void arduinoSerial::flush(){
+    tcflush(this->fd, TCIOFLUSH);
+    if(this->debug){ std::cout << "flush(): Flushed " << this->ttyName << "\n"; }
+}
 
 /*
     * Looks for the next valid float in the incoming serial.
