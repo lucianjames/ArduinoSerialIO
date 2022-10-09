@@ -7,6 +7,6 @@ void setup() {
 }
 
 void loop() {
-  Serial.print("69");
+  Serial.print("dfgaa69fghdsd");
   delay(1000);
 }
