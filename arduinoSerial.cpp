@@ -35,7 +35,7 @@ unsigned int arduinoSerial::availableForWrite(){
 void arduinoSerial::begin(unsigned long baudRate){
     // Check if the baud rate is valid:
     if(std::find(this->acceptableBaudRates.begin(), this->acceptableBaudRates.end(), baudRate) == this->acceptableBaudRates.end()){
-        throw std::invalid_argument("begin(): Invalid baud rate - " + std::to_string(baudRate) + " is not a valid baud rate, see termios.h or termios-baud.h for a list of valid baud rates (Hint: format is B<baud rate>)");
+        throw std::invalid_argument("begin(): Invalid baud rate - " + std::to_string(baudRate) + " is not a valid baud rate, see termios.h or termios-baud.h for a list of valid baud rate macros (Hint: format is B<baud rate>)");
         return;
     }
     this->fd = open(this->ttyName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY); // Open the file descriptor
