@@ -8,9 +8,9 @@
 int main(){
     arduinoSerial serial("/dev/ttyACM0", true);
     serial.begin(B9600);
-    // ParseInt test
-    while(1){
-        std::cout << serial.parseInt() << std::endl;
+    // ParseFloat test
+    while(true){
+        std::cout << serial.parseFloat() << std::endl;
         sleep(1);
     }
     return 0;

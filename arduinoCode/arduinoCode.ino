@@ -7,6 +7,6 @@ void setup() {
 }
 
 void loop() {
-  Serial.print("dfgaa69fghdsd");
+  Serial.print(".32.23.21.sex");
   delay(1000);
 }

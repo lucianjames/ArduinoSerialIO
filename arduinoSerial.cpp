@@ -133,7 +133,45 @@ void arduinoSerial::flush(){
     * (based on ASCII digits, decimal point, and negative sign).
 */
 float arduinoSerial::parseFloat(){
-    return -1; // Function not yet implemented
+    std::string numStr; // Used to store the number as a string (so we can convert it to a float using std::stof())
+    bool allowDecimal = true; // Used to make sure there is only one decimal point in the number
+    while(1){
+        char c = this->read_s();
+        // First perform all checks which would cause the function to return the current value of numStr. This includes the end of the buffer, and the end of the number.
+        if(c == -1){ // Return if end of buffer is reached
+            if(debug){ std::cout << "parseFloat(): Reached end of buffer, returning " << numStr << "\n"; }
+            return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
+        }
+        // Return numStr if numStr.length() > 0 and the current character is not a digit, decimal point, or negative sign
+        if(numStr.length() > 0 && !isdigit(c) && c != '.' && c != '-'){
+            if(debug){ std::cout << "parseFloat(): Found non-digit, non-decimal point, non-negative sign, returning " << numStr << "\n"; }
+            return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
+        }
+        // Return numStr if the current character is a decimal point and allowDecimal is false
+        if(c == '.' && !allowDecimal){
+            if(debug){ std::cout << "parseFloat(): Found second decimal point, returning " << numStr << "\n"; }
+            return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
+        }
+        // Return numStr if the current character is a negative sign and numStr.length() > 0
+        if(c == '-' && numStr.length() > 0){
+            if(debug){ std::cout << "parseFloat(): Found negative sign in the middle of a number, returning " << numStr << "\n"; }
+            return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
+        }
+        // If the current character is a digit, add it to numStr
+        if(isdigit(c)){
+            numStr += c;
+        }
+        // If the current character is a decimal point, add it to numStr and set allowDecimal to false
+        else if(c == '.'){
+            numStr += c;
+            allowDecimal = false;
+        }
+        // If the current character is a negative sign and numStr.length() == 0, add it to numStr
+        else if(c == '-' && numStr.length() == 0){
+            numStr += c;
+        }
+    }
+    return -1;
 }
 
 /*
@@ -161,7 +199,7 @@ long arduinoSerial::parseInt(){
             return num;
         }
     }
-    return num;
+    return -1;
 }
 
 /*
