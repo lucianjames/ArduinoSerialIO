@@ -138,38 +138,26 @@ float arduinoSerial::parseFloat(){
     while(1){
         char c = this->read_s();
         // First perform all checks which would cause the function to return the current value of numStr. This includes the end of the buffer, and the end of the number.
-        if(c == -1){ // Return if end of buffer is reached
+        if(c == -1){ // Return numStr if end of buffer is reached
             if(debug){ std::cout << "parseFloat(): Reached end of buffer, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
-        // Return numStr if numStr.length() > 0 and the current character is not a digit, decimal point, or negative sign
-        if(numStr.length() > 0 && !isdigit(c) && c != '.' && c != '-'){
+        if(numStr.length() > 0 && !isdigit(c) && c != '.' && c != '-'){ // Return numStr if numStr.length() > 0 and the current character is not a digit, decimal point, or negative sign
             if(debug){ std::cout << "parseFloat(): Found non-digit, non-decimal point, non-negative sign, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
-        // Return numStr if the current character is a decimal point and allowDecimal is false
-        if(c == '.' && !allowDecimal){
+        if(c == '.' && !allowDecimal){ // Return numStr if the current character is a decimal point and allowDecimal is false
             if(debug){ std::cout << "parseFloat(): Found second decimal point, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
-        // Return numStr if the current character is a negative sign and numStr.length() > 0
-        if(c == '-' && numStr.length() > 0){
+        if(c == '-' && numStr.length() > 0){ // Return numStr if the current character is a negative sign and numStr.length() > 0
             if(debug){ std::cout << "parseFloat(): Found negative sign in the middle of a number, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
-        // If the current character is a digit, add it to numStr
-        if(isdigit(c)){
-            numStr += c;
-        }
-        // If the current character is a decimal point, add it to numStr and set allowDecimal to false
-        else if(c == '.'){
-            numStr += c;
-            allowDecimal = false;
-        }
-        // If the current character is a negative sign and numStr.length() == 0, add it to numStr
-        else if(c == '-' && numStr.length() == 0){
-            numStr += c;
-        }
+        // Now that we know that we dont have to return numStr, we can add the current character to numStr (as long as it is a digit, decimal point, or negative sign)
+        if(c == '.'){ allowDecimal = false; }
+        if(isdigit(c) || c == '.' || c == '-'){ numStr += c; }
+
     }
     return -1;
 }
@@ -273,7 +261,7 @@ int arduinoSerial::read_s(){
         return -1;
     }
     if(bytesRead == 0){
-        if(this->debug){ std::cout << "read_s(): ERROR reading from serial port " << this->ttyName << " (Returned 0, EOF) - !!! /dev/ttyACM_ likely doesnt exist !!!\n"; }
+        if(this->debug){ std::cout << "read_s(): ERROR reading from serial port " << this->ttyName << " (Returned 0, EOF) - !!! " << this->ttyName << " is likely not accessible !!!\n"; }
         return -1;
     }
     return byte;
