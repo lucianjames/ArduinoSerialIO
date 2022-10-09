@@ -7,11 +7,10 @@
     * ArduinoSerial
     * 
     * This class enables communication with an Arduino over a serial port.
-    * It is based on the Arduino Serial class, but is not a direct copy (At least not yet).
+    * It is based on the Arduino Serial class, but is not a direct copy.
     * 
     * Features which will not be implemented (in this version):
     * - Timeout, a different branch will be created for this
-    * - Flush() - This is because 
     * - AvailableForWrite()
     * - Peek()
     * 
