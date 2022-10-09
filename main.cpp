@@ -11,7 +11,7 @@ int main(){
     while(1){
         // Send a message to the Arduino
         serial.print("Hello Arduino!");
-        // Wait for the Arduino to respond
+        // Wait for the Arduino to respond, currently manually waiting with sleep() is required as timeout is not yet implemented
         sleep(1);
         std::string response = serial.readString();
         std::cout << "Arduino says: " << response << "\n";
