@@ -9,8 +9,8 @@
     * It is based on the Arduino Serial class, but is not a direct copy (At least not yet).
     * 
     * Notes:
-    *  - Timeout is not yet implemented, so functions may block indefinitely.
-    *  - The configuration of the serial port may not be correct.
+    *  - Timeout is not yet implemented, so functions may block indefinitely. Once ive implemented everything without timeout, I'll add it (probably in a separate branch).
+    *  - The configuration of the serial port may not be correct. 
 */
 
 
@@ -31,7 +31,7 @@ public:
     bool findUntil(char *target, char *terminator);
     void flush();
     float parseFloat();
-    int parseInt();
+    long parseInt();
     int peek();
     void print(std::string str);
     void print(char c);

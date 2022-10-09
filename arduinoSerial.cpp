@@ -38,7 +38,7 @@ void arduinoSerial::begin(unsigned long baudRate){
     }
     if(this->debug){ std::cout << "begin(): Serial port " << this->ttyName << " opened\n"; }
     fcntl(this->fd, F_SETFL, O_NONBLOCK); // Set the file descriptor to nonblocking mode
-    // !!! The following termios options may or may not be correct:
+    // !!! The following termios options may or may not be correct (I copied them from the internet :) )
     struct termios options;
     tcgetattr(this->fd, &options); // Get the current options for the port
     cfsetispeed(&options, baudRate); // Set the baud rates
@@ -106,12 +106,21 @@ void arduinoSerial::flush(){
     // Function not yet implemented
 }
 
+/*
+    * Looks for the next valid float in the incoming serial.
+    * (based on ASCII digits, decimal point, and negative sign).
+*/
 float arduinoSerial::parseFloat(){
     return -1; // Function not yet implemented
 }
 
-int arduinoSerial::parseInt(){
-    return -1; // Function not yet implemented
+/*
+    * Looks for the next valid integer in the incoming serial.
+    * (based on ASCII digits, and negative sign).
+*/
+long arduinoSerial::parseInt(){
+    // Function not yet implemented
+    return -1;
 }
 
 /*
@@ -133,6 +142,7 @@ int arduinoSerial::peek(){
 /*
     * Prints data to the serial port (as human-readable ASCII text ?maybe?)
     * Will need to write a few overloaded functions for different data types
+    * Could probably use templates
 */
 void arduinoSerial::print(std::string str){
     write(this->fd, str.c_str(), str.length());
@@ -154,30 +164,30 @@ void arduinoSerial::print(float f){
 }
 
 /*
-    * Prints data to the serial port followed by a newline (as human-readable ASCII text ?maybe?)
+    * Prints data to the serial port followed by a newline as human-readable ASCII text.
     * Will need to write a few overloaded functions for different data types
 */
 void arduinoSerial::println(std::string str){
-    write(this->fd, str.c_str(), str.length());
-    write(this->fd, "\n\r", 2);
-    if(this->debug){ std::cout << "println(): Wrote " << str.length()+2 << " bytes to " << this->ttyName << "\n"; }
+    int bytes_written =  write(this->fd, str.c_str(), str.length());
+    bytes_written += write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << bytes_written << " bytes to " << this->ttyName << "\n"; }
 }
 void arduinoSerial::println(char c){
-    write(this->fd, &c, 1);
-    write(this->fd, "\n\r", 2);
-    if(this->debug){ std::cout << "println(): Wrote 3 bytes to " << this->ttyName << "\n"; }
+    int bytes_written = write(this->fd, &c, 1);
+    bytes_written += write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << bytes_written << " bytes to " << this->ttyName << "\n"; }
 }
 void arduinoSerial::println(int i){
     std::string str = std::to_string(i);
-    write(this->fd, str.c_str(), str.length());
-    write(this->fd, "\n\r", 2);
-    if(this->debug){ std::cout << "println(): Wrote " << str.length()+2 << " bytes to " << this->ttyName << "\n"; }
+    int bytes_written = write(this->fd, str.c_str(), str.length());
+    bytes_written += write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << bytes_written << " bytes to " << this->ttyName << "\n"; }
 }
 void arduinoSerial::println(float f){
     std::string str = std::to_string(f);
-    write(this->fd, str.c_str(), str.length());
-    write(this->fd, "\n\r", 2);
-    if(this->debug){ std::cout << "println(): Wrote " << str.length()+2 << " bytes to " << this->ttyName << "\n"; }
+    int bytes_written = write(this->fd, str.c_str(), str.length());
+    bytes_written += write(this->fd, "\n\r", 2);
+    if(this->debug){ std::cout << "println(): Wrote " << bytes_written << " bytes to " << this->ttyName << "\n"; }
 }
 
 /*
@@ -209,7 +219,7 @@ size_t arduinoSerial::readBytes(char *buffer, size_t length){
     while(bytesRead < length){
         int byte = this->read_s();
         if(byte == -1){
-            if(this->debug){ std::cout << "readBytes(): Error reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
+            if(this->debug){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
             break;
         }
         buffer[bytesRead] = byte;
@@ -229,7 +239,7 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
     while(bytesRead < length){ // Read until the desired number of bytes have been read
         int byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
         if(byte == -1){ // -1 Means some error occurred (Such as no data available)
-            if(this->debug){ std::cout << "readBytesUntil(): Error reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
+            if(this->debug){ std::cout << "readBytesUntil(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
             break;
         }
         buffer[bytesRead] = byte;
@@ -295,8 +305,8 @@ void arduinoSerial::setTimeout(unsigned long timeout){
 */
 size_t arduinoSerial::write_s(char byte){
     int bytesWritten = write(this->fd, &byte, 1);
-    if(bytesWritten == -1){
-        if(this->debug){ std::cout << "write_s(): Error writing to serial port " << this->ttyName << " (Returned -1)\n"; }
+    if(bytesWritten == -1 || bytesWritten == 0){
+        if(this->debug){ std::cout << "write_s(): Error writing to serial port " << this->ttyName << " (bytesWritten == -1 or 0)\n"; }
         return -1;
     }
     if(this->debug){ std::cout << "write_s(): Wrote " << bytesWritten << " bytes to " << this->ttyName << "\n"; }
@@ -305,8 +315,8 @@ size_t arduinoSerial::write_s(char byte){
 
 size_t arduinoSerial::write_s(char *buffer, size_t size){
     int bytesWritten = write(this->fd, buffer, size);
-    if(bytesWritten == -1){
-        if(this->debug){ std::cout << "write_s(): Error writing to serial port " << this->ttyName << " (Returned -1)\n"; }
+    if(bytesWritten == -1 || bytesWritten == 0){
+        if(this->debug){ std::cout << "write_s(): Error writing to serial port " << this->ttyName << " (bytesWritten == -1 or 0)\n"; }
         return -1;
     }
     if(this->debug){ std::cout << "write_s(): Wrote " << bytesWritten << " bytes to " << this->ttyName << "\n"; }
