@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #define BUFFERSIZE 1024 // Used by functions that are not provided a buffer by the user (e.g. readString()). This could be as small as 1, but i dont think a single kb is too much to ask for.
 
@@ -32,16 +33,10 @@ unsigned int arduinoSerial::availableForWrite(){
 }
 
 void arduinoSerial::begin(unsigned long baudRate){
-    // Check if the baud rate is valid. std::find doesnt seem to work with this->acceptableBaudRates, so i have to do it manually
-    bool baudRateValid = false;
-    for(auto b : this->acceptableBaudRates){
-        if(b == baudRate){
-            baudRateValid = true;
-            break;
-        }
-    }
-    if(!baudRateValid){
-        throw std::invalid_argument("Invalid baud rate, see termios.h and termios-baud.h for a list of acceptable baud rate macros");
+    // Check if the baud rate is valid:
+    if(std::find(this->acceptableBaudRates.begin(), this->acceptableBaudRates.end(), baudRate) == this->acceptableBaudRates.end()){
+        throw std::invalid_argument("begin(): Invalid baud rate - " + std::to_string(baudRate) + " is not a valid baud rate, see termios.h or termios-baud.h for a list of valid baud rates (Hint: format is B<baud rate>)");
+        return;
     }
     this->fd = open(this->ttyName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY); // Open the file descriptor
     if(this->fd == -1){
