@@ -7,7 +7,7 @@
 
 int main(){
     arduinoSerial serial("/dev/ttyACM0", true);
-    serial.begin(9600);
+    serial.begin(B9600);
     while(1){
         // Send a message to the Arduino
         serial.print("Hello Arduino!");
