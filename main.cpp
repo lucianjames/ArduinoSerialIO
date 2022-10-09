@@ -1,4 +1,5 @@
-#include<unistd.h> // Just for sleep()
+#include <chrono>
+#include <thread>
 
 #include <iostream>
 #include <string>
@@ -6,12 +7,14 @@
 #include "arduinoSerial.h"
 
 int main(){
-    arduinoSerial serial("/dev/ttyACM0", true);
+    arduinoSerial serial("/dev/ttyACM0", false);
     serial.begin(B9600);
-    // ParseFloat test
     while(true){
-        std::cout << serial.parseFloat() << std::endl;
-        sleep(1);
+        if(serial.available()){
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Wait for the data to come in, otherwise it will be incomplete
+            std::cout << serial.parseFloat() << std::endl;
+            serial.flush();
+        }
     }
     return 0;
 }
