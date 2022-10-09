@@ -5,10 +5,8 @@
 
 #include "arduinoSerial.h"
 
-#define DEBUGMODE true
-
 int main(){
-    arduinoSerial serial("/dev/ttyACM0", DEBUGMODE);
+    arduinoSerial serial("/dev/ttyACM0", true);
     serial.begin(9600);
     while(1){
         // Send a message to the Arduino
