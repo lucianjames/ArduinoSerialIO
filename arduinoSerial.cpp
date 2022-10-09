@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h>
+#include <sys/ioctl.h>
 
 #include <iostream>
 #include <vector>
@@ -14,23 +15,37 @@
 
 #define BUFFERSIZE 1024 // Used by functions that are not provided a buffer by the user (e.g. readString()). This could be as small as 1, but i dont think a single kb is too much to ask for.
 
+// Constructor
 arduinoSerial::arduinoSerial(std::string port, bool debug){
     this->debug = debug;
     this->ttyName = port;
+    if(this->debug){ std::cout << "aurdioSeral object created. ttyName = " << this->ttyName << "\n"; }
 }
 
+// Destructor
 arduinoSerial::~arduinoSerial(){
-    close(this->fd); // Close the file descriptor
-    if(this->debug){ std::cout << "~arduinoSerial(): Closed file descriptor " << this->fd << " for " << this->ttyName << "\n"; }
+    if(this->debug){ std::cout << "~arduinoSerial() called\n"; }
+    this->end();
 }
 
+/*
+    * Get the number of bytes (characters) available for reading from the serial port.
+*/
 unsigned int arduinoSerial::available(){
-    return -1; // Function not yet implemented
+    int bytesAvailable;
+    ioctl(this->fd, FIONREAD, &bytesAvailable);
+    if(debug){ std::cout << "available(): Detected " << bytesAvailable << " bytes available\n"; }
+    return bytesAvailable;
 }
 
+/*
+    * Get the number of bytes (characters) available for writing in the serial buffer without blocking the write operation.
+    * This isnt really something I need to implement, I dont think. I'll leave it here for now, but it may be removed in the future.
 unsigned int arduinoSerial::availableForWrite(){
-    return -1; // Function not yet implemented
+    std::cout << "AvailableForWrite(): Function not implemented, returning -1\n";
+    return -1;
 }
+*/
 
 void arduinoSerial::begin(unsigned long baudRate){
     // Check if the baud rate is valid:
@@ -106,11 +121,12 @@ bool arduinoSerial::findUntil(char *target, char *terminator){
 }
 
 /*
+    * Waits for the transmission of outgoing serial data to complete.
     * Might not implement this function.
-*/
 void arduinoSerial::flush(){
-    // Function not yet implemented
+    std::cout << "flush(): Function not implemented\n";
 }
+*/
 
 /*
     * Looks for the next valid float in the incoming serial.
@@ -121,29 +137,38 @@ float arduinoSerial::parseFloat(){
 }
 
 /*
-    * Looks for the next valid integer in the incoming serial.
+    * Looks for the next valid integer in the incoming serial. Will read until it finds a valid integer.
     * (based on ASCII digits, and negative sign).
 */
 long arduinoSerial::parseInt(){
-    // Function not yet implemented
-    return -1;
+    long num = 0;
+    char lastC; // Used to keep track of sign of number
+    bool sign = true; // True if positive, false if negative
+    while(1){
+        char c = this->read_s();
+        if(c == -1){
+            if(debug){ std::cout << "pasrseInt(): Reached end of buffer, returning " << num << "\n"; }
+            return num;
+        }
+        lastC = c;
+        if(isdigit(c)){
+            if(lastC == '-'){
+                sign = false;
+            }
+            num = num * 10 + (c - '0');
+        }else if(num != 0){
+            return num;
+        }
+    }
+    return num;
 }
 
 /*
     * Returns the next byte of incoming serial data without removing it from the internal serial buffer.
-*/
 int arduinoSerial::peek(){
-    FILE* fp = fdopen(this->fd, "r"); // We need a FILE* to use fgetc()/ungetc()
-    if(fp == NULL){
-        throw std::runtime_error("peek(): Unable to open the file descriptor " + std::to_string(this->fd));
-    }else if(this->debug){
-        std::cout << "peek(): File descriptor " << this->fd << " opened as a FILE*\n";
-    }
-    int c = fgetc(fp); // Get the next character
-    ungetc(c, fp); // Put the character back
-    fclose(fp); // Close the file pointer
-    return c;
+    return -1;
 }
+*/
 
 /*
     * Prints data to the serial port (as human-readable ASCII text ?maybe?)
@@ -299,11 +324,13 @@ std::string arduinoSerial::readStringUntil(char terminator){
     return str;
 }
 
+/*
 void arduinoSerial::setTimeout(unsigned long timeout){
     // Function not yet implemented
     // Print something because this function makes a huge difference to the program if it is not implemented
     std::cout << "setTimeout() not yet implemented, read arduinoSerial.h for more information.\n";
 }
+*/
 
 /*
     * Writes binary data to the serial port.
