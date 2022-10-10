@@ -74,7 +74,7 @@ void arduinoSerial::begin(unsigned long baudRate){
     options.c_cflag |= CS8; // 8 bits
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
     tcsetattr(this->fd, TCSANOW, &options); // Set the new options for the port
-    sleep(1); // Wait for the Arduino to reset
+    //sleep(1); // Wait for the Arduino to reset
     tcflush(this->fd, TCIFLUSH);
     if(this->debug){ std::cout << "begin(): Serial port " << this->ttyName << " configured. File descriptor: " << this->fd << "\n"; }
 }
