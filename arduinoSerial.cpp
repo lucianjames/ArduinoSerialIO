@@ -275,8 +275,9 @@ int arduinoSerial::read_s(){
     * Returns the number of bytes placed in the buffer (0 means no valid data found).
 */
 size_t arduinoSerial::readBytes(char *buffer, size_t length){
+    auto start = std::chrono::steady_clock::now();
     size_t bytesRead = 0;
-    while(bytesRead < length){
+    while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() < this->timeout){
         int byte = this->read_s();
         if(byte == -1){
             if(this->debug){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
@@ -285,6 +286,8 @@ size_t arduinoSerial::readBytes(char *buffer, size_t length){
         buffer[bytesRead] = byte;
         bytesRead++;
     }
+    if(this->debug && bytesRead == length){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (specified number of bytes was read)\n"; }
+    if(this->debug && bytesRead != length){ std::cout << "readBytes(): Timed out reading from serial port " << this->ttyName << " (specified number of bytes was not read)\n"; }
     if(this->debug){ std::cout << "readBytes(): Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
     return bytesRead;
 }
@@ -295,8 +298,9 @@ size_t arduinoSerial::readBytes(char *buffer, size_t length){
     * Returns the number of bytes placed in the buffer (0 means no valid data found).
 */
 size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t length){
+    auto start = std::chrono::steady_clock::now();
     size_t bytesRead = 0;
-    while(bytesRead < length){ // Read until the desired number of bytes have been read
+    while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() < this->timeout){
         int byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
         if(byte == -1){ // -1 Means some error occurred (Such as no data available)
             if(this->debug){ std::cout << "readBytesUntil(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
@@ -309,6 +313,8 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
             break;
         }
     }
+    if(this->debug && bytesRead == length){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (specified number of bytes was read)\n"; }
+    if(this->debug && bytesRead != length){ std::cout << "readBytes(): Timed out reading from serial port " << this->ttyName << " (specified number of bytes was not read)\n"; }
     if(this->debug){ std::cout << "readBytesUntil(): Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
     return bytesRead;
 }
