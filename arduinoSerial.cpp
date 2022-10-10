@@ -367,8 +367,8 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
             break;
         }
     }
-    if(this->debug && bytesRead == length){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (specified number of bytes was read)\n"; }
-    if(this->debug && bytesRead != length){ std::cout << "readBytes(): Timed out reading from serial port " << this->ttyName << " (specified number of bytes was not read)\n"; }
+    if(this->debug && bytesRead == length){ std::cout << "readBytesUntil(): Finished reading from serial port " << this->ttyName << " (specified number of bytes was read)\n"; }
+    if(this->debug && bytesRead != length){ std::cout << "readBytesUntil(): Timed out reading from serial port " << this->ttyName << " (specified number of bytes was not read)\n"; }
     if(this->debug){ std::cout << "readBytesUntil(): Read " << bytesRead << " bytes from serial port " << this->ttyName << "\n"; }
     return bytesRead;
 }
