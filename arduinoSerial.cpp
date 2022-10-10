@@ -169,7 +169,6 @@ bool arduinoSerial::findUntil(std::string targetStr, char terminator){
 
 /*
     * Removes incoming serial data from the serial buffer.
-    * Doesnt do what Serial.flush() does in Arduino, but it is still useful.
 */
 void arduinoSerial::flush(){
     tcflush(this->fd, TCIOFLUSH);
@@ -354,12 +353,10 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
     size_t bytesRead = 0;
     while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         int byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
-        if(byte == -1){ // -1 Means some error occurred (Such as no data available)
-            if(this->debug){ std::cout << "readBytesUntil(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
-            break;
+        if(byte != -1){
+            buffer[bytesRead] = byte;
+            bytesRead++;
         }
-        buffer[bytesRead] = byte;
-        bytesRead++;
         if(byte == terminator){
             if(this->debug){ std::cout << "readBytesUntil(): Terminator character found, stopping read\n"; }
             break;
@@ -394,16 +391,13 @@ std::string arduinoSerial::readString(){
     * The function terminates if the terminator character is read, or if it times out.
 */
 std::string arduinoSerial::readStringUntil(char terminator){
-    auto start = std::chrono::high_resolution_clock::now();
     char buffer[BUFFERSIZE]; // Create a buffer to store the data
     std::string str = ""; // Create a string to return
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
-        size_t bytesRead = this->readBytesUntil(terminator, buffer, BUFFERSIZE); // Read the data into the buffer local to this function
-        for(size_t i = 0; i < bytesRead; i++){
-            str += buffer[i]; // Add the data to the string
-        }
+    size_t bytesRead = this->readBytesUntil(terminator, buffer, BUFFERSIZE); // Read the data into the buffer local to this function
+    for(size_t i = 0; i < bytesRead; i++){
+        str += buffer[i]; // Add the data to the string
     }
-    if(this->debug){ std::cout << "readStringUntil(): Timeout reached, read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
+    if(this->debug){ std::cout << "readStringUntil(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
     return str;
 }
 

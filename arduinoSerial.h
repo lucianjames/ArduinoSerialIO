@@ -9,13 +9,11 @@
     * This class enables communication with an Arduino over a serial port.
     * It is based on the Arduino Serial class, but is not a direct copy.
     * Only works on good operating systems.
-    * 
     * This version implements timeout functionality.
     * 
     * Features which will not be implemented (in this version):
     * - AvailableForWrite()
     * - Peek()
-    * 
     * 
     * Notes:
     *  - The configuration of the serial port may not be correct. 
