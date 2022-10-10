@@ -39,8 +39,7 @@ void measureDistance(){
   
   // Convert the time into a distance
   cm = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
-  Serial.print(cm);
-  Serial.println();
+  Serial.println(cm);
 }
 
 void loop() {
