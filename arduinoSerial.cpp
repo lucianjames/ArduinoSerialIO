@@ -114,10 +114,13 @@ bool arduinoSerial::find(std::string targetStr){
     char c;
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         c = this->read_s();
-        buffer += c;
-        if(buffer.find(targetStr) != std::string::npos){
-            if(this->debug){ std::cout << "find(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
-            return true;
+        if(c != -1){
+            buffer += c;
+            if(buffer.find(targetStr) != std::string::npos){
+                if(this->debug){ std::cout << "find(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
+                return true;
+            }
+            std::cout << "find(): buffer = " << buffer << "\n";
         }
     }
     if(this->debug){ std::cout << "find(): Timed out while searching for target '" << targetStr << "' in " << this->ttyName << "\n"; }
@@ -153,14 +156,16 @@ bool arduinoSerial::findUntil(std::string targetStr, char terminator){
     char c;
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         c = this->read_s();
-        buffer += c;
-        if(buffer.find(targetStr) != std::string::npos){
-            if(this->debug){ std::cout << "findUntil(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
-            return true;
-        }
-        if(c == terminator){
-            if(this->debug){ std::cout << "findUntil(): Found terminator '" << terminator << "' in " << this->ttyName << "\n"; }
-            return false;
+        if(c != -1){
+            buffer += c;
+            if(buffer.find(targetStr) != std::string::npos){
+                if(this->debug){ std::cout << "findUntil(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
+                return true;
+            }
+            if(c == terminator){
+                if(this->debug){ std::cout << "findUntil(): Found terminator '" << terminator << "' in " << this->ttyName << "\n"; }
+                return false;
+            }
         }
     }
     if(this->debug){ std::cout << "findUntil(): Timed out while searching for target '" << targetStr << "' in " << this->ttyName << "\n"; }
