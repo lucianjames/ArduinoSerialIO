@@ -8,15 +8,16 @@
     * 
     * This class enables communication with an Arduino over a serial port.
     * It is based on the Arduino Serial class, but is not a direct copy.
+    * Only works on good operating systems.
+    * 
+    * This version implements timeout functionality.
     * 
     * Features which will not be implemented (in this version):
-    * - Timeout, a different branch will be created for this
     * - AvailableForWrite()
     * - Peek()
     * 
     * 
     * Notes:
-    *  - Timeout is not yet implemented, so functions may block indefinitely. Once ive implemented everything without timeout, I'll add it (probably in a separate branch).
     *  - The configuration of the serial port may not be correct. 
     *  - Flush is set up to behave as it did prior to arduino 1.0, it removes incoming data.
 */
@@ -29,7 +30,7 @@ private:
     bool debug; // If true, debug messages will be printed to the console
     // Every single baud rate defined in termios.h or termios-baud.h:
     const std::array<unsigned long, 31> acceptableBaudRates = {B0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400, B460800, B500000, B576000, B921600, B1000000, B1152000, B1500000, B2000000, B2500000, B3000000, B3500000, B4000000};
-
+    unsigned long timeout = 1000; // The timeout for read operations. This is in milliseconds. Default is 1000ms (1 second)
 public:
     arduinoSerial(std::string port, bool debug=false);
     ~arduinoSerial();
@@ -57,7 +58,7 @@ public:
     size_t readBytesUntil(char terminator, char *buffer, size_t length);
     std::string readString();
     std::string readStringUntil(char terminator);
-    //void setTimeout(unsigned long timeout);
+    void setTimeout(unsigned long timeout);
     size_t write_s(char byte); // Named like read_s for the same reason
     size_t write_s(char *buffer, size_t size);
 };

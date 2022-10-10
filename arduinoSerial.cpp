@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <chrono>
 
 #define BUFFERSIZE 1024 // Used by functions that are not provided a buffer by the user (e.g. readString()). This could be as small as 1, but i dont think a single kb is too much to ask for.
 
@@ -353,12 +354,14 @@ std::string arduinoSerial::readStringUntil(char terminator){
 }
 
 /*
-void arduinoSerial::setTimeout(unsigned long timeout){
-    // Function not yet implemented
-    // Print something because this function makes a huge difference to the program if it is not implemented
-    std::cout << "setTimeout() not yet implemented, read arduinoSerial.h for more information.\n";
-}
+    * Sets the timeout for read operations.
+    * The timeout is specified in milliseconds.
+    * Default is 1000 ms.
 */
+void arduinoSerial::setTimeout(unsigned long timeout){
+    this->timeout = timeout;
+    if(this->debug){ std::cout << "setTimeout(): Set timeout to " << this->timeout << " ms\n"; }
+}
 
 /*
     * Writes binary data to the serial port.
