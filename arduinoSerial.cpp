@@ -90,9 +90,9 @@ void arduinoSerial::end(){
     * Times out if the target string is not found within the specified timeout period (this->timeout).
 */
 bool arduinoSerial::find(char target){
-    auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     char c;
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() < this->timeout){
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         c = this->read_s();
         if(c == target){
             if(this->debug){ std::cout << "find(): Found target '" << target << "in " << this->ttyName << "\n"; }
@@ -124,8 +124,47 @@ bool arduinoSerial::find(std::string targetStr){
     return false;
 }
 
-bool arduinoSerial::findUntil(char *target, char *terminator){
-    return false; // Function not yet implemented
+/*
+    * Reads data from the serial buffer intil the target string is found.
+    * Returns true if the target string was found, false otherwise.
+    * Returns false if the termination character is found
+    * Times out if the target string is not found within the specified timeout period (this->timeout).
+*/
+bool arduinoSerial::findUntil(char target, char terminator){
+    auto start = std::chrono::high_resolution_clock::now();
+    char c;
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
+        c = this->read_s();
+        if(c == target){
+            if(this->debug){ std::cout << "findUntil(): Found target '" << target << "' in " << this->ttyName << "\n"; }
+            return true;
+        }
+        if(c == terminator){
+            if(this->debug){ std::cout << "findUntil(): Found terminator '" << terminator << "' in " << this->ttyName << "\n"; }
+            return false;
+        }
+    }
+    if(this->debug){ std::cout << "findUntil(): Timed out while searching for target '" << target << "' in " << this->ttyName << "\n"; }
+    return false;
+}
+bool arduinoSerial::findUntil(std::string targetStr, char terminator){
+    auto start = std::chrono::high_resolution_clock::now();
+    std::string buffer = "";
+    char c;
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
+        c = this->read_s();
+        buffer += c;
+        if(buffer.find(targetStr) != std::string::npos){
+            if(this->debug){ std::cout << "findUntil(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
+            return true;
+        }
+        if(c == terminator){
+            if(this->debug){ std::cout << "findUntil(): Found terminator '" << terminator << "' in " << this->ttyName << "\n"; }
+            return false;
+        }
+    }
+    if(this->debug){ std::cout << "findUntil(): Timed out while searching for target '" << targetStr << "' in " << this->ttyName << "\n"; }
+    return false;
 }
 
 /*
@@ -140,11 +179,13 @@ void arduinoSerial::flush(){
 /*
     * Looks for the next valid float in the incoming serial.
     * (based on ASCII digits, decimal point, and negative sign).
+    * Times out if no valid float is found within the specified timeout period (this->timeout).
 */
 float arduinoSerial::parseFloat(){
+    auto start = std::chrono::high_resolution_clock::now();
     std::string numStr; // Used to store the number as a string (so we can convert it to a float using std::stof())
     bool allowDecimal = true; // Used to make sure there is only one decimal point in the number
-    while(1){
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         char c = this->read_s();
         // First perform all checks which would cause the function to return the current value of numStr. This includes the end of the buffer, and the end of the number.
         if(c == -1){ // Return numStr if end of buffer is reached
@@ -168,7 +209,8 @@ float arduinoSerial::parseFloat(){
         if(isdigit(c) || c == '.' || c == '-'){ numStr += c; }
 
     }
-    return -1;
+    if(debug){ std::cout << "parseFloat(): Timed out while searching for a float, returning " << numStr << "\n"; }
+    return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
 }
 
 /*
@@ -176,10 +218,11 @@ float arduinoSerial::parseFloat(){
     * (based on ASCII digits, and negative sign).
 */
 long arduinoSerial::parseInt(){
+    auto start = std::chrono::high_resolution_clock::now();
     long num = 0;
     char lastC; // Used to keep track of sign of number
     bool sign = true; // True if positive, false if negative
-    while(1){
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         char c = this->read_s();
         if(c == -1){
             if(debug){ std::cout << "pasrseInt(): Reached end of buffer, returning " << num << "\n"; }
@@ -196,11 +239,13 @@ long arduinoSerial::parseInt(){
             return num;
         }
     }
-    return -1;
+    if(debug){ std::cout << "parseInt(): Timed out while searching for an integer, returning " << num << "\n"; }
+    return num;
 }
 
 /*
     * Returns the next byte of incoming serial data without removing it from the internal serial buffer.
+    * WONT IMPLEMENT, pushing a character back into the buffer doesnt seem to work when i tried and i cant be bothered to find the actual solution.
 int arduinoSerial::peek(){
     return -1;
 }
@@ -282,9 +327,9 @@ int arduinoSerial::read_s(){
     * Returns the number of bytes placed in the buffer (0 means no valid data found).
 */
 size_t arduinoSerial::readBytes(char *buffer, size_t length){
-    auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     size_t bytesRead = 0;
-    while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() < this->timeout){
+    while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         int byte = this->read_s();
         if(byte == -1){
             if(this->debug){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
@@ -305,9 +350,9 @@ size_t arduinoSerial::readBytes(char *buffer, size_t length){
     * Returns the number of bytes placed in the buffer (0 means no valid data found).
 */
 size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t length){
-    auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     size_t bytesRead = 0;
-    while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() < this->timeout){
+    while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         int byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
         if(byte == -1){ // -1 Means some error occurred (Such as no data available)
             if(this->debug){ std::cout << "readBytesUntil(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
@@ -328,21 +373,19 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
 
 /*
     * Reads characters from the serial port into a std::string.
-    * The function terminates if it times out. (Not implemented yet, for now it just reads until /dev/ttyACM0 is empty)
+    * The function terminates if it times out.
 */
 std::string arduinoSerial::readString(){
+    auto start = std::chrono::high_resolution_clock::now();
     char buffer[BUFFERSIZE]; // Create a buffer to store the data
     std::string str = ""; // Create a string to return
-    while(1){
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         size_t bytesRead = this->readBytes(buffer, BUFFERSIZE); // Read the data into the buffer local to this function
         for(size_t i = 0; i < bytesRead; i++){
             str += buffer[i]; // Add the data to the string
         }
-        if(bytesRead < BUFFERSIZE){ // If the buffer is not full, then we have reached the end of the data
-            break;
-        }
     }
-    if(this->debug){ std::cout << "readString(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
+    if(this->debug){ std::cout << "readString(): Timeout reached, read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
     return str;
 }
 
@@ -351,18 +394,16 @@ std::string arduinoSerial::readString(){
     * The function terminates if the terminator character is read, or if it times out.
 */
 std::string arduinoSerial::readStringUntil(char terminator){
+    auto start = std::chrono::high_resolution_clock::now();
     char buffer[BUFFERSIZE]; // Create a buffer to store the data
     std::string str = ""; // Create a string to return
-    while(1){
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         size_t bytesRead = this->readBytesUntil(terminator, buffer, BUFFERSIZE); // Read the data into the buffer local to this function
         for(size_t i = 0; i < bytesRead; i++){
             str += buffer[i]; // Add the data to the string
         }
-        if(bytesRead < BUFFERSIZE){ // If the buffer is not full, then we have reached the end of the data
-            break;
-        }
     }
-    if(this->debug){ std::cout << "readStringUntil(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
+    if(this->debug){ std::cout << "readStringUntil(): Timeout reached, read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
     return str;
 }
 

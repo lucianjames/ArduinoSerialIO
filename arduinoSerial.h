@@ -40,7 +40,8 @@ public:
     void end();
     bool find(char target);
     bool find(std::string targetStr);
-    bool findUntil(char *target, char *terminator);
+    bool findUntil(char target, char terminator);
+    bool findUntil(std::string targetStr, char terminator);
     void flush();
     float parseFloat();
     long parseInt();
