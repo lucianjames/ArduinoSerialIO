@@ -87,34 +87,41 @@ void arduinoSerial::end(){
 /*
     * Reads data from the serial buffer intil the target string is found.
     * Returns true if the target string was found, false otherwise.
+    * Times out if the target string is not found within the specified timeout period (this->timeout).
 */
 bool arduinoSerial::find(char target){
+    auto start = std::chrono::steady_clock::now();
     char c;
-    while(1){
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() < this->timeout){
         c = this->read_s();
         if(c == target){
             if(this->debug){ std::cout << "find(): Found target '" << target << "in " << this->ttyName << "\n"; }
             return true;
         }
-        else if(c == -1){
-            if(this->debug){ std::cout << "find(): Did not find " << target << " in " << this->ttyName << "\n"; }
-            return false;
-        }
     }
+    if(this->debug){ std::cout << "find(): Timed out while searching for target '" << target << "' in " << this->ttyName << "\n"; }
     return false;
 }
 
-// WARNING: READS ENTIRE BUFFER, PROBABLY NOT A COPY OF HOW Serial.find() WORKS IN ARDUINO
+/*
+    * Reads data from the serial buffer intil the target string is found.
+    * Returns true if the target string was found, false otherwise.
+    * Times out if the target string is not found within the specified timeout period (this->timeout).
+*/
 bool arduinoSerial::find(std::string targetStr){
-    std::string read = this->readString();
-    if(read.find(targetStr) != std::string::npos){
-        if(this->debug){ std::cout << "find(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
-        return true;
+    auto start = std::chrono::high_resolution_clock::now();
+    std::string buffer = "";
+    char c;
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
+        c = this->read_s();
+        buffer += c;
+        if(buffer.find(targetStr) != std::string::npos){
+            if(this->debug){ std::cout << "find(): Found target '" << targetStr << "' in " << this->ttyName << "\n"; }
+            return true;
+        }
     }
-    else{
-        if(this->debug){ std::cout << "find(): Did not find '" << targetStr << "' in " << this->ttyName << "\n"; }
-        return false;
-    }
+    if(this->debug){ std::cout << "find(): Timed out while searching for target '" << targetStr << "' in " << this->ttyName << "\n"; }
+    return false;
 }
 
 bool arduinoSerial::findUntil(char *target, char *terminator){
