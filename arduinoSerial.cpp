@@ -228,10 +228,6 @@ long arduinoSerial::parseInt(){
     bool sign = true; // True if positive, false if negative
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         char c = this->read_s();
-        if(c == -1){
-            if(debug){ std::cout << "pasrseInt(): Reached end of buffer, returning " << num << "\n"; }
-            return num;
-        }
         lastC = c;
         if(isdigit(c)){
             if(lastC == '-'){
@@ -335,12 +331,10 @@ size_t arduinoSerial::readBytes(char *buffer, size_t length){
     size_t bytesRead = 0;
     while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
         int byte = this->read_s();
-        if(byte == -1){
-            if(this->debug){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (this->read_s() returned either -1 or 0) - Buffer is likely empty\n"; }
-            break;
+        if(byte != -1){
+            buffer[bytesRead] = byte;
+            bytesRead++;
         }
-        buffer[bytesRead] = byte;
-        bytesRead++;
     }
     if(this->debug && bytesRead == length){ std::cout << "readBytes(): Finished reading from serial port " << this->ttyName << " (specified number of bytes was read)\n"; }
     if(this->debug && bytesRead != length){ std::cout << "readBytes(): Timed out reading from serial port " << this->ttyName << " (specified number of bytes was not read)\n"; }
@@ -394,6 +388,8 @@ std::string arduinoSerial::readString(){
 /*
     * Reads characters from the serial port into a std::string.
     * The function terminates if the terminator character is read, or if it times out.
+    * 
+    *  NEEEEEEDS REEEWRITEEEEEEE
 */
 std::string arduinoSerial::readStringUntil(char terminator){
     char buffer[BUFFERSIZE]; // Create a buffer to store the data
