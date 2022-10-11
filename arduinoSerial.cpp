@@ -351,7 +351,7 @@ size_t arduinoSerial::readBytesUntil(char terminator, char *buffer, size_t lengt
     auto start = std::chrono::high_resolution_clock::now();
     size_t bytesRead = 0;
     while(bytesRead != length && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
-        int byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
+        char byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
         if(byte != -1){
             buffer[bytesRead] = byte;
             bytesRead++;
@@ -388,15 +388,19 @@ std::string arduinoSerial::readString(){
 /*
     * Reads characters from the serial port into a std::string.
     * The function terminates if the terminator character is read, or if it times out.
-    * 
-    *  NEEEEEEDS REEEWRITEEEEEEE
 */
 std::string arduinoSerial::readStringUntil(char terminator){
-    char buffer[BUFFERSIZE]; // Create a buffer to store the data
+    auto start = std::chrono::high_resolution_clock::now();
     std::string str = ""; // Create a string to return
-    size_t bytesRead = this->readBytesUntil(terminator, buffer, BUFFERSIZE); // Read the data into the buffer local to this function
-    for(size_t i = 0; i < bytesRead; i++){
-        str += buffer[i]; // Add the data to the string
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < this->timeout){
+        char byte = this->read_s(); // Read the next byte in the serial port using the read_s() function from above
+        if(byte != -1){
+            str += byte; // Add the data to the string
+        }
+        if(byte == terminator){
+            if(this->debug){ std::cout << "readStringUntil(): Terminator character found, stopping read\n"; }
+            break;
+        }
     }
     if(this->debug){ std::cout << "readStringUntil(): Read std::string from serial port " << this->ttyName << ", bytes read: " << str.length() << "\n"; }
     return str;
