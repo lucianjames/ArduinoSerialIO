@@ -235,12 +235,12 @@ long arduinoSerial::parseInt(){
             }
             num = num * 10 + (c - '0');
         }else if(num != 0){
-            if(debug){ std::cout << "parseInt(): Found integer " << num << "\n"; }
-            return num;
+            if(debug){ std::cout << "parseInt(): Found integer " << num * (sign? 1 : -1) << "\n"; }
+            return num * (sign? 1 : -1);
         }
     }
-    if(debug){ std::cout << "parseInt(): Timed out while searching for an integer, returning " << num << "\n"; }
-    return num;
+    if(debug){ std::cout << "parseInt(): Timed out while searching for an integer, returning " << num * (sign? 1 : -1) << "\n"; }
+    return num * (sign? 1 : -1);
 }
 
 /*
