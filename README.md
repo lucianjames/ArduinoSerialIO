@@ -7,7 +7,6 @@ This code should work for all kinds of serial devices, not just arduinos (I have
 ## Public functions
 ```
 unsigned int available();
-//unsigned int availableForWrite();
 void begin(unsigned long baudRate);
 void end();
 bool find(char target);
