@@ -1,15 +1,12 @@
 #include "arduinoSerial.h"
 
 #include <stdio.h> 
-#include <string.h>
 #include <unistd.h>  
 #include <fcntl.h>
-#include <errno.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 
 #include <iostream>
-#include <vector>
 #include <string>
 #include <algorithm>
 #include <chrono>

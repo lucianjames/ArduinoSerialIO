@@ -1,5 +1,4 @@
 #include <string>
-#include <vector>
 #include <array>
 #include <termios.h>
 
