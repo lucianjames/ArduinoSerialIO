@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <chrono>
+#include <array>
 
 /*
     * ArduinoSerial
