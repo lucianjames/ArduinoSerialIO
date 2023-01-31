@@ -364,7 +364,7 @@ void arduinoSerial::println(float f){
     * Function is called read_s() because read() is already taken by the C library.
 */
 int arduinoSerial::read_s(){
-    char byte;
+    unsigned char byte;
     int bytesRead = read(this->fd, &byte, 1);
     if(bytesRead == -1){
         if(this->debug){ std::cout << "read_s(): Did not read from serial port " << this->ttyName << " (Returned -1) - Buffer is likely empty\n"; }
