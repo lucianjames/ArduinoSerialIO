@@ -100,7 +100,6 @@ arduinoSerial::~arduinoSerial(){
     After calling this function, begin() must be called again.
 */
 void arduinoSerial::openPort(std::string port){
-    close(this->fd); // Close the current serial port
     this->ttyName = port;
     if(this->debug){ std::cout << "openPort(): ttyName = " << this->ttyName << "\n"; }
 }
