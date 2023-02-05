@@ -143,17 +143,30 @@ void arduinoSerial::begin(unsigned long baudRate){
     }
     if(this->debug){ std::cout << "begin(): Serial port " << this->ttyName << " opened\n"; }
     fcntl(this->fd, F_SETFL, O_NONBLOCK); // Set the file descriptor to nonblocking mode
-    // !!! The following termios options may or may not be correct (I copied them from the internet :) )
     struct termios options;
     tcgetattr(this->fd, &options); // Get the current options for the port
     cfsetispeed(&options, baudRate); // Set the baud rates
     cfsetospeed(&options, baudRate);
+    /*
+        !!!! You may need to change these options to get your serial device working as expected
+        !!!! Dont forget about this if you are having weird issues with data not being sent or received properly
+    */
+    // These options were required to get my ESP32 to work properly (copied from how the esp-idf monitor configured them):
+    options.c_iflag &= ~ICRNL; // Disable carriage return to newline mapping
+    options.c_iflag &= ~IXON; // Disable XON/XOFF flow control on output
+    options.c_oflag &= ~OPOST; // Disable output processing
+    options.c_oflag &= ~ONLCR; // Disable mapping NL to CR-NL on output
+    options.c_lflag &= ~IEXTEN; // Disable input processing
+    options.c_lflag &= ~ECHOK; // Disable kill char erasing the current line
+    options.c_lflag &= ~ECHOCTL; // Disable echoing special chars as ^x
+    options.c_lflag &= ~ECHOKE; // Disable kill echoed by erasing each char on the line
+    // These options were copied from some github repo when i was first making this class:
     options.c_cflag |= (CLOCAL | CREAD); // Enable the receiver and set local mode
     options.c_cflag &= ~CSIZE; // Mask the character size bits
     options.c_cflag |= CS8; // Select 8 data bits
     options.c_cflag &= ~PARENB; // No parity
     options.c_cflag &= ~CSTOPB; // 1 Stop bit
-    options.c_cflag &= ~CSIZE;
+    options.c_cflag &= ~CSIZE; // Char size mask
     options.c_cflag |= CS8; // 8 bits
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
     tcsetattr(this->fd, TCSANOW, &options); // Set the new options for the port
