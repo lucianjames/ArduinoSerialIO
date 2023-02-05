@@ -37,7 +37,10 @@ private:
     long timeout = 1000; // The timeout for read operations. This is in milliseconds. Default is 1000ms (1 second)
 public:
     arduinoSerial(std::string port, bool debug=false);
+    arduinoSerial();
     ~arduinoSerial();
+    void openPort(std::string port);
+    void closePort();
     unsigned int available();
     //unsigned int availableForWrite();
     void begin(unsigned long baudRate);
@@ -79,10 +82,35 @@ arduinoSerial::arduinoSerial(std::string port, bool debug){
     if(this->debug){ std::cout << "aurdioSeral object created. ttyName = " << this->ttyName << "\n"; }
 }
 
+// Default constructor
+arduinoSerial::arduinoSerial(){
+    this->debug = false;
+    this->ttyName = "/dev/ttyACM0";
+    if(this->debug){ std::cout << "aurdioSeral object created. ttyName = " << this->ttyName << "\n"; }
+}
+
 // Destructor
 arduinoSerial::~arduinoSerial(){
     if(this->debug){ std::cout << "~arduinoSerial() called\n"; }
     this->end();
+}
+
+/*
+    Change the serial port that the object is using.
+    After calling this function, begin() must be called again.
+*/
+void arduinoSerial::openPort(std::string port){
+    close(this->fd); // Close the current serial port
+    this->ttyName = port;
+    if(this->debug){ std::cout << "openPort(): ttyName = " << this->ttyName << "\n"; }
+}
+
+/*
+    * Close the serial port.
+*/
+void arduinoSerial::closePort(){
+    if(this->debug){ std::cout << "close(): Closing serial port\n"; }
+    close(this->fd);
 }
 
 /*
@@ -91,7 +119,7 @@ arduinoSerial::~arduinoSerial(){
 unsigned int arduinoSerial::available(){
     int bytesAvailable;
     ioctl(this->fd, FIONREAD, &bytesAvailable);
-    if(debug){ std::cout << "available(): Detected " << bytesAvailable << " bytes available\n"; }
+    if(this->debug){ std::cout << "available(): Detected " << bytesAvailable << " bytes available\n"; }
     return bytesAvailable;
 }
 
@@ -249,19 +277,19 @@ float arduinoSerial::parseFloat(){
         char c = this->read_s();
         // First perform all checks which would cause the function to return the current value of numStr. This includes the end of the buffer, and the end of the number.
         if(c == -1){ // Return numStr if end of buffer is reached
-            if(debug){ std::cout << "parseFloat(): Reached end of buffer, returning " << numStr << "\n"; }
+            if(this->debug){ std::cout << "parseFloat(): Reached end of buffer, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
         if(numStr.length() > 0 && !isdigit(c) && c != '.' && c != '-'){ // Return numStr if numStr.length() > 0 and the current character is not a digit, decimal point, or negative sign
-            if(debug){ std::cout << "parseFloat(): Found non-digit, non-decimal point, non-negative sign, returning " << numStr << "\n"; }
+            if(this->debug){ std::cout << "parseFloat(): Found non-digit, non-decimal point, non-negative sign, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
         if(c == '.' && !allowDecimal){ // Return numStr if the current character is a decimal point and allowDecimal is false
-            if(debug){ std::cout << "parseFloat(): Found second decimal point, returning " << numStr << "\n"; }
+            if(this->debug){ std::cout << "parseFloat(): Found second decimal point, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
         if(c == '-' && numStr.length() > 0){ // Return numStr if the current character is a negative sign and numStr.length() > 0
-            if(debug){ std::cout << "parseFloat(): Found negative sign in the middle of a number, returning " << numStr << "\n"; }
+            if(this->debug){ std::cout << "parseFloat(): Found negative sign in the middle of a number, returning " << numStr << "\n"; }
             return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
         }
         // Now that we know that we dont have to return numStr, we can add the current character to numStr (as long as it is a digit, decimal point, or negative sign)
@@ -269,7 +297,7 @@ float arduinoSerial::parseFloat(){
         if(isdigit(c) || c == '.' || c == '-'){ numStr += c; }
 
     }
-    if(debug){ std::cout << "parseFloat(): Timed out while searching for a float, returning " << numStr << "\n"; }
+    if(this->debug){ std::cout << "parseFloat(): Timed out while searching for a float, returning " << numStr << "\n"; }
     return (numStr.length() > 0)? std::stof(numStr) : 0; // If numStr is empty, return 0
 }
 
@@ -291,11 +319,11 @@ long arduinoSerial::parseInt(){
             }
             num = num * 10 + (c - '0');
         }else if(num != 0){
-            if(debug){ std::cout << "parseInt(): Found integer " << num * (sign? 1 : -1) << "\n"; }
+            if(this->debug){ std::cout << "parseInt(): Found integer " << num * (sign? 1 : -1) << "\n"; }
             return num * (sign? 1 : -1);
         }
     }
-    if(debug){ std::cout << "parseInt(): Timed out while searching for an integer, returning " << num * (sign? 1 : -1) << "\n"; }
+    if(this->debug){ std::cout << "parseInt(): Timed out while searching for an integer, returning " << num * (sign? 1 : -1) << "\n"; }
     return num * (sign? 1 : -1);
 }
 
