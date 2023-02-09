@@ -1,8 +1,10 @@
 # ArduinoSerialIO
-## Header file for communicating easily with an arduino via /dev/ttyACM_  written in C++. (Linux only)
+## Header file for communicating easily with serial devices via /dev/tty____  written in C++. (Linux only)
 
-This bit of code is useful for programming serial communication with an arduino, since its set up to behave in a very similar way to the Serial functions on the arduino itself.
-This code should work for all kinds of serial devices, not just arduinos (I have used this code for some ESP32 stuff)
+This header file is designed to act as close as possible to the arduino "Serial" library, there are a couple missing functions, and I cant guarantee that everything does indeed work *exactly* as it should, but its pretty close.
+
+
+`read()` and `write()` are actually named `read_s()` and `write_s()`
 
 ## Public functions
 ```
