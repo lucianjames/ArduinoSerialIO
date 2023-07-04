@@ -84,7 +84,7 @@ arduinoSerial::arduinoSerial(std::string port, bool debug){
     if(this->debug){ std::cout << "aurdioSeral object created. ttyName = " << this->ttyName << "\n"; }
 }
 
-// Default constructor
+// Default constructor, assumes no debug and arduino is at /dev/ttyACM0
 arduinoSerial::arduinoSerial(){
     this->debug = false;
     this->ttyName = "/dev/ttyACM0";
@@ -98,8 +98,8 @@ arduinoSerial::~arduinoSerial(){
 }
 
 /*
-    Change the serial port that the object is using.
-    After calling this function, begin() must be called again.
+    * Change the serial port that the object is using.
+    * After calling this function, begin() must be called again.
 */
 void arduinoSerial::openPort(std::string port){
     this->ttyName = port;
@@ -421,7 +421,7 @@ int arduinoSerial::read_s(){
 
 /*
     * Reads characters from the serial port into a buffer.
-    * The function terminates if the terminator character is read, or if it times out.
+    * The function terminates if length bytes have been read, or the timeout is reached.
     * Returns the number of bytes placed in the buffer (0 means no valid data found).
 */
 size_t arduinoSerial::readBytes(char *buffer, size_t length){
